@@ -1,39 +1,48 @@
 # Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
 # file Copyright.txt or https://cmake.org/licensing for details.
 
-#.rst:
-# TestBigEndian
-# -------------
-#
-# Define macro to determine endian type
-#
-# Check if the system is big endian or little endian
-#
-# ::
-#
-#   TEST_BIG_ENDIAN(VARIABLE)
-#   VARIABLE - variable to store the result to
+#[=======================================================================[.rst:
+TestBigEndian
+-------------
+
+Define macro to determine endian type
+
+Check if the system is big endian or little endian
+
+::
+
+  TEST_BIG_ENDIAN(VARIABLE)
+  VARIABLE - variable to store the result to
+#]=======================================================================]
+
+include(CheckTypeSize)
 
 macro(TEST_BIG_ENDIAN VARIABLE)
   if(NOT DEFINED HAVE_${VARIABLE})
     message(STATUS "Check if the system is big endian")
     message(STATUS "Searching 16 bit integer")
 
-    include(CheckTypeSize)
+    if(CMAKE_C_COMPILER_LOADED)
+      set(_test_language "C")
+    elseif(CMAKE_CXX_COMPILER_LOADED)
+      set(_test_language "CXX")
+    else()
+      message(FATAL_ERROR "TEST_BIG_ENDIAN needs either C or CXX language enabled")
+    endif()
 
-    CHECK_TYPE_SIZE("unsigned short" CMAKE_SIZEOF_UNSIGNED_SHORT)
+    CHECK_TYPE_SIZE("unsigned short" CMAKE_SIZEOF_UNSIGNED_SHORT LANGUAGE ${_test_language})
     if(CMAKE_SIZEOF_UNSIGNED_SHORT EQUAL 2)
       message(STATUS "Using unsigned short")
       set(CMAKE_16BIT_TYPE "unsigned short")
     else()
-      CHECK_TYPE_SIZE("unsigned int"   CMAKE_SIZEOF_UNSIGNED_INT)
+      CHECK_TYPE_SIZE("unsigned int"   CMAKE_SIZEOF_UNSIGNED_INT LANGUAGE ${_test_language})
       if(CMAKE_SIZEOF_UNSIGNED_INT)
         message(STATUS "Using unsigned int")
         set(CMAKE_16BIT_TYPE "unsigned int")
 
       else()
 
-        CHECK_TYPE_SIZE("unsigned long"  CMAKE_SIZEOF_UNSIGNED_LONG)
+        CHECK_TYPE_SIZE("unsigned long"  CMAKE_SIZEOF_UNSIGNED_LONG LANGUAGE ${_test_language})
         if(CMAKE_SIZEOF_UNSIGNED_LONG)
           message(STATUS "Using unsigned long")
           set(CMAKE_16BIT_TYPE "unsigned long")
@@ -45,17 +54,21 @@ macro(TEST_BIG_ENDIAN VARIABLE)
 
     endif()
 
+    if(_test_language STREQUAL "CXX")
+      set(_test_file "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/TestEndianess.cpp")
+    else()
+      set(_test_file "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/TestEndianess.c")
+    endif()
 
     configure_file("${CMAKE_ROOT}/Modules/TestEndianess.c.in"
-                   "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/TestEndianess.c"
+                   ${_test_file}
                    @ONLY)
 
-     file(READ "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/TestEndianess.c"
-          TEST_ENDIANESS_FILE_CONTENT)
+     file(READ ${_test_file} TEST_ENDIANESS_FILE_CONTENT)
 
      try_compile(HAVE_${VARIABLE}
       "${CMAKE_BINARY_DIR}"
-      "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/TestEndianess.c"
+      ${_test_file}
       OUTPUT_VARIABLE OUTPUT
       COPY_FILE "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/TestEndianess.bin" )
 

@@ -2,12 +2,6 @@
 # file Copyright.txt or https://cmake.org/licensing for details.
 
 
-# Nothing here yet
-if(CMAKE_GENERATOR MATCHES "Visual Studio 7")
-  include(CMakeVS7BackwardCompatibility)
-  set(CMAKE_SKIP_COMPATIBILITY_TESTS 1)
-endif()
-
 if(NOT CMAKE_SKIP_COMPATIBILITY_TESTS)
   # Old CMake versions did not support OS X universal binaries anyway,
   # so just get through this with at least some size for the types.
@@ -65,9 +59,6 @@ if(NOT CMAKE_SKIP_COMPATIBILITY_TESTS)
   set (CMAKE_HP_PTHREADS        ${CMAKE_HP_PTHREADS_INIT} CACHE BOOL
      "Use HP pthreads.")
 
-  set (CMAKE_USE_SPROC          ${CMAKE_USE_SPROC_INIT} CACHE BOOL
-     "Use sproc libs.")
-
   if(__ERASE_CMAKE_TRY_COMPILE_OSX_ARCHITECTURES)
     set(CMAKE_TRY_COMPILE_OSX_ARCHITECTURES)
     set(__ERASE_CMAKE_TRY_COMPILE_OSX_ARCHITECTURES)
@@ -78,7 +69,6 @@ mark_as_advanced(
 CMAKE_HP_PTHREADS
 CMAKE_THREAD_LIBS
 CMAKE_USE_PTHREADS
-CMAKE_USE_SPROC
 CMAKE_USE_WIN32_THREADS
 CMAKE_X_CFLAGS
 CMAKE_X_LIBS

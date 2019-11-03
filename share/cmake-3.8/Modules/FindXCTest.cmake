@@ -61,6 +61,22 @@ The following variables are set by including this module:
 
 #]=======================================================================]
 
+set(_PRESERVED_CMAKE_FIND_ROOT_PATH "${CMAKE_FIND_ROOT_PATH}")
+
+if(CMAKE_EFFECTIVE_SYSTEM_NAME STREQUAL "Apple"
+   AND NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+  # Non-macos systems set the CMAKE_FIND_ROOT_PATH_MODE to "ONLY" which
+  # restricts the search paths too much to find XCTest.framework. In
+  # contrast to the regular system frameworks which reside within the
+  # SDK direectory the XCTest framework is located in the respective
+  # platform directory which is not added to the CMAKE_FIND_ROOT_PATH
+  # (only to CMAKE_SYSTEM_FRAMEWORK_PATH) and therefore not searched.
+  #
+  # Until this is properly addressed, temporaily add the platform
+  # directory to CMAKE_FIND_ROOT_PATH.
+  list(APPEND CMAKE_FIND_ROOT_PATH "${_CMAKE_OSX_SYSROOT_PATH}/../..")
+endif()
+
 find_path(XCTest_INCLUDE_DIR
   NAMES "XCTest/XCTest.h"
   DOC "XCTest include directory")
@@ -70,6 +86,9 @@ find_library(XCTest_LIBRARY
   NAMES XCTest
   DOC "XCTest Framework library")
 mark_as_advanced(XCTest_LIBRARY)
+
+set(CMAKE_FIND_ROOT_PATH "${_PRESERVED_CMAKE_FIND_ROOT_PATH}")
+unset(_PRESERVED_CMAKE_FIND_ROOT_PATH)
 
 execute_process(
   COMMAND xcrun --find xctest
@@ -123,6 +142,10 @@ function(xctest_add_bundle target testee)
     # testee is a Framework
     target_link_libraries(${target} PRIVATE ${testee})
 
+  elseif(_testee_type STREQUAL "STATIC_LIBRARY")
+    # testee is a static library
+    target_link_libraries(${target} PRIVATE ${testee})
+
   elseif(_testee_type STREQUAL "EXECUTABLE" AND _testee_macosx_bundle)
     # testee is an App Bundle
     add_dependencies(${target} ${testee})
@@ -132,7 +155,7 @@ function(xctest_add_bundle target testee)
         XCODE_ATTRIBUTE_TEST_HOST "$<TARGET_FILE:${testee}>")
       if(NOT XCODE_VERSION VERSION_LESS 7.3)
         set_target_properties(${target} PROPERTIES
-          LIBRARY_OUTPUT_DIRECTORY "$<TARGET_FILE_DIR:${testee}>/../PlugIns")
+          LIBRARY_OUTPUT_DIRECTORY "$<TARGET_BUNDLE_CONTENT_DIR:${testee}>/PlugIns")
       endif()
     else(XCODE)
       target_link_libraries(${target}
@@ -179,7 +202,7 @@ function(xctest_add_test name bundle)
 
   add_test(
     NAME ${name}
-    COMMAND ${XCTest_EXECUTABLE} $<TARGET_LINKER_FILE_DIR:${bundle}>/../..)
+    COMMAND ${XCTest_EXECUTABLE} $<TARGET_BUNDLE_DIR:${bundle}>)
 
   # point loader to testee in case rpath is disabled
 

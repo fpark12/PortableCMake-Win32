@@ -17,9 +17,19 @@ if(CMAKE_SYSTEM_VERSION EQUAL 1)
   return()
 endif()
 
+set(CMAKE_BUILD_TYPE_INIT Debug)
+
+# Skip sysroot selection if the NDK has a unified toolchain.
+if(CMAKE_ANDROID_NDK_TOOLCHAIN_UNIFIED)
+  return()
+endif()
+
 if(NOT CMAKE_SYSROOT)
   if(CMAKE_ANDROID_NDK)
     set(CMAKE_SYSROOT "${CMAKE_ANDROID_NDK}/platforms/android-${CMAKE_SYSTEM_VERSION}/arch-${CMAKE_ANDROID_ARCH}")
+    if(NOT CMAKE_ANDROID_NDK_DEPRECATED_HEADERS)
+      set(CMAKE_SYSROOT_COMPILE "${CMAKE_ANDROID_NDK}/sysroot")
+    endif()
   elseif(CMAKE_ANDROID_STANDALONE_TOOLCHAIN)
     set(CMAKE_SYSROOT "${CMAKE_ANDROID_STANDALONE_TOOLCHAIN}/sysroot")
   endif()
@@ -37,5 +47,3 @@ else()
     "Android: No CMAKE_SYSROOT was selected."
     )
 endif()
-
-set(CMAKE_BUILD_TYPE_INIT Debug)
