@@ -30,7 +30,6 @@ if(NOT CMAKE_CXX_COMPILER_NAMES)
 endif()
 
 if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
-elseif("${CMAKE_GENERATOR}" MATCHES "Green Hills MULTI")
 elseif("${CMAKE_GENERATOR}" MATCHES "Xcode")
   set(CMAKE_CXX_COMPILER_XCODE_TYPE sourcecode.cpp.cpp)
   _cmake_find_compiler_path(CXX)
@@ -74,12 +73,6 @@ else()
   set(CMAKE_CXX_COMPILER_ID_TEST_FLAGS
     # Try compiling to an object file only.
     "-c"
-    # IAR does not detect language automatically
-    "--c++"
-    "--ec++"
-
-    # ARMClang need target options
-    "--target=arm-arm-none-eabi -mcpu=cortex-m3"
     )
 endif()
 
@@ -104,7 +97,7 @@ if(NOT CMAKE_CXX_COMPILER_ID_RUN)
   #      ...
   #      /path/to/cc ...CompilerIdCXX/...
   # to extract the compiler front-end for the language.
-  set(CMAKE_CXX_COMPILER_ID_TOOL_MATCH_REGEX "\nLd[^\n]*(\n[ \t]+[^\n]*)*\n[ \t]+([^ \t\r\n]+)[^\r\n]*-o[^\r\n]*CompilerIdCXX/(\\./)?(CompilerIdCXX.(framework|xctest)/)?CompilerIdCXX[ \t\n\\\"]")
+  set(CMAKE_CXX_COMPILER_ID_TOOL_MATCH_REGEX "\nLd[^\n]*(\n[ \t]+[^\n]*)*\n[ \t]+([^ \t\r\n]+)[^\r\n]*-o[^\r\n]*CompilerIdCXX/(\\./)?(CompilerIdCXX.xctest/)?CompilerIdCXX[ \t\n\\\"]")
   set(CMAKE_CXX_COMPILER_ID_TOOL_MATCH_INDEX 2)
 
   include(${CMAKE_ROOT}/Modules/CMakeDetermineCompilerId.cmake)
@@ -118,22 +111,6 @@ if(NOT CMAKE_CXX_COMPILER_ID_RUN)
     set(CMAKE_COMPILER_IS_MINGW 1)
   elseif(CMAKE_CXX_PLATFORM_ID MATCHES "Cygwin")
     set(CMAKE_COMPILER_IS_CYGWIN 1)
-  endif()
-else()
-  if(NOT DEFINED CMAKE_CXX_COMPILER_FRONTEND_VARIANT)
-    # Some toolchain files set our internal CMAKE_CXX_COMPILER_ID_RUN
-    # variable but are not aware of CMAKE_CXX_COMPILER_FRONTEND_VARIANT.
-    # They pre-date our support for the GNU-like variant targeting the
-    # MSVC ABI so we do not consider that here.
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-      if("x${CMAKE_CXX_SIMULATE_ID}" STREQUAL "xMSVC")
-        set(CMAKE_CXX_COMPILER_FRONTEND_VARIANT "MSVC")
-      else()
-        set(CMAKE_CXX_COMPILER_FRONTEND_VARIANT "GNU")
-      endif()
-    else()
-      set(CMAKE_CXX_COMPILER_FRONTEND_VARIANT "")
-    endif()
   endif()
 endif()
 
@@ -152,17 +129,16 @@ endif ()
 
 if (CMAKE_CROSSCOMPILING  AND NOT  _CMAKE_TOOLCHAIN_PREFIX)
 
-  if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU|Clang|QCC")
+  if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     get_filename_component(COMPILER_BASENAME "${CMAKE_CXX_COMPILER}" NAME)
-    if (COMPILER_BASENAME MATCHES "^(.+-)(clan)?[gc]\\+\\+(-[0-9]+(\\.[0-9]+)*)?(-[^.]+)?(\\.exe)?$")
+    if (COMPILER_BASENAME MATCHES "^(.+-)(clan)?[gc]\\+\\+(-[0-9]+\\.[0-9]+\\.[0-9]+)?(\\.exe)?$")
       set(_CMAKE_TOOLCHAIN_PREFIX ${CMAKE_MATCH_1})
-      set(_CMAKE_COMPILER_SUFFIX ${CMAKE_MATCH_5})
     elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
       if(CMAKE_CXX_COMPILER_TARGET)
         set(_CMAKE_TOOLCHAIN_PREFIX ${CMAKE_CXX_COMPILER_TARGET}-)
       endif()
     elseif(COMPILER_BASENAME MATCHES "QCC(\\.exe)?$")
-      if(CMAKE_CXX_COMPILER_TARGET MATCHES "gcc_nto([a-z0-9]+_[0-9]+|[^_le]+)(le)")
+      if(CMAKE_CXX_COMPILER_TARGET MATCHES "gcc_nto([^_le]+)(le)?")
         set(_CMAKE_TOOLCHAIN_PREFIX nto${CMAKE_MATCH_1}-)
       endif()
     endif ()
@@ -184,26 +160,10 @@ if (CMAKE_CROSSCOMPILING  AND NOT  _CMAKE_TOOLCHAIN_PREFIX)
 
 endif ()
 
-set(_CMAKE_PROCESSING_LANGUAGE "CXX")
 include(CMakeFindBinUtils)
-include(Compiler/${CMAKE_CXX_COMPILER_ID}-FindBinUtils OPTIONAL)
-unset(_CMAKE_PROCESSING_LANGUAGE)
-
-if(CMAKE_CXX_COMPILER_ARCHITECTURE_ID)
-  set(_SET_CMAKE_CXX_COMPILER_ARCHITECTURE_ID
-    "set(CMAKE_CXX_COMPILER_ARCHITECTURE_ID ${CMAKE_CXX_COMPILER_ARCHITECTURE_ID})")
-else()
-  set(_SET_CMAKE_CXX_COMPILER_ARCHITECTURE_ID "")
-endif()
-
 if(MSVC_CXX_ARCHITECTURE_ID)
   set(SET_MSVC_CXX_ARCHITECTURE_ID
     "set(MSVC_CXX_ARCHITECTURE_ID ${MSVC_CXX_ARCHITECTURE_ID})")
-endif()
-
-if(CMAKE_CXX_XCODE_ARCHS)
-  set(SET_CMAKE_XCODE_ARCHS
-    "set(CMAKE_XCODE_ARCHS \"${CMAKE_CXX_XCODE_ARCHS}\")")
 endif()
 
 # configure all variables set in this file

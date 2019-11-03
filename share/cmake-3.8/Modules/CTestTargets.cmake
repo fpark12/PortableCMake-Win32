@@ -3,7 +3,7 @@
 
 
 if(NOT RUN_FROM_CTEST_OR_DART)
-  message(FATAL_ERROR "Do not include CTestTargets.cmake directly")
+  message(FATAL_ERROR "Do not incldue CTestTargets.cmake directly")
 endif()
 
 if(NOT PROJECT_BINARY_DIR)
@@ -38,8 +38,7 @@ endif()
 #
 
 set(__conf_types "")
-get_property(_isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-if(_isMultiConfig)
+if(CMAKE_CONFIGURATION_TYPES)
   # We need to pass the configuration type on the test command line.
   set(__conf_types -C "${CMAKE_CFG_INTDIR}")
 endif()

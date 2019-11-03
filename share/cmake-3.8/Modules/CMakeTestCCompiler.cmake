@@ -11,12 +11,6 @@ endif()
 
 include(CMakeTestCompilerCommon)
 
-# work around enforced code signing and / or missing exectuable target type
-set(__CMAKE_SAVED_TRY_COMPILE_TARGET_TYPE ${CMAKE_TRY_COMPILE_TARGET_TYPE})
-if(_CMAKE_FEATURE_DETECTION_TARGET_TYPE)
-  set(CMAKE_TRY_COMPILE_TARGET_TYPE ${_CMAKE_FEATURE_DETECTION_TARGET_TYPE})
-endif()
-
 # Remove any cached result from an older CMake version.
 # We now store this in CMakeCCompiler.cmake.
 unset(CMAKE_C_COMPILER_WORKS CACHE)
@@ -28,7 +22,6 @@ unset(CMAKE_C_COMPILER_WORKS CACHE)
 # any makefiles or projects.
 if(NOT CMAKE_C_COMPILER_WORKS)
   PrintTestCompilerStatus("C" "")
-  __TestCompiler_setTryCompileTargetType()
   file(WRITE ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/testCCompiler.c
     "#ifdef __cplusplus\n"
     "# error \"The CMAKE_C_COMPILER is set to a C++ compiler\"\n"
@@ -48,7 +41,6 @@ if(NOT CMAKE_C_COMPILER_WORKS)
   set(CMAKE_C_COMPILER_WORKS ${CMAKE_C_COMPILER_WORKS})
   unset(CMAKE_C_COMPILER_WORKS CACHE)
   set(C_TEST_WAS_RUN 1)
-  __TestCompiler_restoreTryCompileTargetType()
 endif()
 
 if(NOT CMAKE_C_COMPILER_WORKS)
@@ -56,10 +48,9 @@ if(NOT CMAKE_C_COMPILER_WORKS)
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
     "Determining if the C compiler works failed with "
     "the following output:\n${__CMAKE_C_COMPILER_OUTPUT}\n\n")
-  string(REPLACE "\n" "\n  " _output "${__CMAKE_C_COMPILER_OUTPUT}")
-  message(FATAL_ERROR "The C compiler\n  \"${CMAKE_C_COMPILER}\"\n"
+  message(FATAL_ERROR "The C compiler \"${CMAKE_C_COMPILER}\" "
     "is not able to compile a simple test program.\nIt fails "
-    "with the following output:\n  ${_output}\n\n"
+    "with the following output:\n ${__CMAKE_C_COMPILER_OUTPUT}\n\n"
     "CMake will not be able to correctly generate this project.")
 else()
   if(C_TEST_WAS_RUN)
@@ -92,6 +83,4 @@ else()
   endif()
 endif()
 
-set(CMAKE_TRY_COMPILE_TARGET_TYPE ${__CMAKE_SAVED_TRY_COMPILE_TARGET_TYPE})
-unset(__CMAKE_SAVED_TRY_COMPILE_TARGET_TYPE)
 unset(__CMAKE_C_COMPILER_OUTPUT)

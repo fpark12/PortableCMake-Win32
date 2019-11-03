@@ -1,22 +1,21 @@
 # Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
 # file Copyright.txt or https://cmake.org/licensing for details.
 
-#[=======================================================================[.rst:
-SquishTestScript
-----------------
-
-
-
-
-
-This script launches a GUI test using Squish.  You should not call the
-script directly; instead, you should access it via the SQUISH_ADD_TEST
-macro that is defined in FindSquish.cmake.
-
-This script starts the Squish server, launches the test on the client,
-and finally stops the squish server.  If any of these steps fail
-(including if the tests do not pass) then a fatal error is raised.
-#]=======================================================================]
+#.rst:
+# SquishTestScript
+# ----------------
+#
+#
+#
+#
+#
+# This script launches a GUI test using Squish.  You should not call the
+# script directly; instead, you should access it via the SQUISH_ADD_TEST
+# macro that is defined in FindSquish.cmake.
+#
+# This script starts the Squish server, launches the test on the client,
+# and finally stops the squish server.  If any of these steps fail
+# (including if the tests do not pass) then a fatal error is raised.
 
 # print out the variable that we are using
 message(STATUS "squish_aut='${squish_aut}'")
@@ -35,7 +34,7 @@ message(STATUS "squish_settingsgroup='${squish_settingsgroup}'")
 message(STATUS "squish_pre_command='${squish_pre_command}'")
 message(STATUS "squish_post_command='${squish_post_command}'")
 
-# parse environment variables
+# parse enviornment variables
 foreach(i ${squish_env_vars})
   message(STATUS "parsing env var key/value pair ${i}")
   string(REGEX MATCH "([^=]*)=(.*)" squish_env_name ${i})

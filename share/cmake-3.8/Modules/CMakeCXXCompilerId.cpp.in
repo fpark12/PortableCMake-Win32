@@ -27,30 +27,12 @@ char const *info_cray = "INFO" ":" "compiler_wrapper[CrayPrgEnv]";
 @CMAKE_CXX_COMPILER_ID_PLATFORM_CONTENT@
 @CMAKE_CXX_COMPILER_ID_ERROR_FOR_TEST@
 
-#if defined(__INTEL_COMPILER) && defined(_MSVC_LANG) && _MSVC_LANG < 201403L
-#  if defined(__INTEL_CXX11_MODE__)
-#    if defined(__cpp_aggregate_nsdmi)
-#      define CXX_STD 201402L
-#    else
-#      define CXX_STD 201103L
-#    endif
-#  else
-#    define CXX_STD 199711L
-#  endif
-#elif defined(_MSC_VER) && defined(_MSVC_LANG)
-#  define CXX_STD _MSVC_LANG
-#else
-#  define CXX_STD __cplusplus
-#endif
-
 const char* info_language_dialect_default = "INFO" ":" "dialect_default["
-#if CXX_STD > 201703L
-  "20"
-#elif CXX_STD >= 201703L
+#if __cplusplus > 201402L
   "17"
-#elif CXX_STD >= 201402L
+#elif __cplusplus >= 201402L
   "14"
-#elif CXX_STD >= 201103L
+#elif __cplusplus >= 201103L
   "11"
 #else
   "98"
@@ -66,9 +48,6 @@ int main(int argc, char* argv[])
   require += info_platform[argc];
 #ifdef COMPILER_VERSION_MAJOR
   require += info_version[argc];
-#endif
-#ifdef COMPILER_VERSION_INTERNAL
-  require += info_version_internal[argc];
 #endif
 #ifdef SIMULATE_ID
   require += info_simulate[argc];

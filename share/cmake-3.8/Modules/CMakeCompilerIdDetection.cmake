@@ -57,14 +57,12 @@ function(compiler_id_detection outvar lang)
       HP
       Compaq
       zOS
-      XLClang
       XL
       VisualAge
       PGI
       Cray
       TI
       Fujitsu
-      GHS
     )
     if (lang STREQUAL C)
       list(APPEND ordered_compilers
@@ -74,20 +72,21 @@ function(compiler_id_detection outvar lang)
     endif()
     list(APPEND ordered_compilers
       SCO
-      ARMCC
       AppleClang
-      ARMClang
       Clang
       GNU
       MSVC
       ADSP
       IAR
+      ARMCC
     )
     if (lang STREQUAL C)
       list(APPEND ordered_compilers
         SDCC
       )
     endif()
+    list(APPEND ordered_compilers
+      MIPSpro)
 
     #Currently the only CUDA compilers are NVIDIA
     if(lang STREQUAL CUDA)
@@ -96,15 +95,13 @@ function(compiler_id_detection outvar lang)
 
     if(CID_ID_DEFINE)
       foreach(Id ${ordered_compilers})
-        string(APPEND CMAKE_${lang}_COMPILER_ID_CONTENT "# define ${CID_PREFIX}COMPILER_IS_${Id} 0\n")
+        set(CMAKE_${lang}_COMPILER_ID_CONTENT "${CMAKE_${lang}_COMPILER_ID_CONTENT}# define ${CID_PREFIX}COMPILER_IS_${Id} 0\n")
       endforeach()
-      # Hard-code definitions for compilers that are no longer supported.
-      string(APPEND CMAKE_${lang}_COMPILER_ID_CONTENT "# define ${CID_PREFIX}COMPILER_IS_MIPSpro 0\n")
     endif()
 
     set(pp_if "#if")
     if (CID_VERSION_STRINGS)
-      string(APPEND CMAKE_${lang}_COMPILER_ID_CONTENT "\n/* Version number components: V=Version, R=Revision, P=Patch
+      set(CMAKE_${lang}_COMPILER_ID_CONTENT "${CMAKE_${lang}_COMPILER_ID_CONTENT}\n/* Version number components: V=Version, R=Revision, P=Patch
    Version date components:   YYYY=Year, MM=Month,   DD=Day  */\n")
     endif()
 
@@ -129,7 +126,7 @@ function(compiler_id_detection outvar lang)
         string(CONFIGURE "${_compiler_id_version_compute_${Id}}" VERSION_BLOCK @ONLY)
         string(APPEND id_content "${VERSION_BLOCK}\n")
       endif()
-      string(APPEND CMAKE_${lang}_COMPILER_ID_CONTENT "\n${id_content}")
+      set(CMAKE_${lang}_COMPILER_ID_CONTENT "${CMAKE_${lang}_COMPILER_ID_CONTENT}\n${id_content}")
       set(pp_if "#elif")
     endforeach()
 
@@ -138,6 +135,9 @@ function(compiler_id_detection outvar lang)
 /* These compilers are either not known or too old to define an
   identification macro.  Try to identify the platform and guess that
   it is the native compiler.  */
+#elif defined(__sgi)
+# define ${CID_PREFIX}COMPILER_ID \"MIPSpro\"
+
 #elif defined(__hpux) || defined(__hpua)
 # define ${CID_PREFIX}COMPILER_ID \"HP\"
 
@@ -145,7 +145,7 @@ function(compiler_id_detection outvar lang)
 # define ${CID_PREFIX}COMPILER_ID \"\"")
     endif()
 
-    string(APPEND CMAKE_${lang}_COMPILER_ID_CONTENT "\n${platform_compiler_detection}\n#endif")
+    set(CMAKE_${lang}_COMPILER_ID_CONTENT "${CMAKE_${lang}_COMPILER_ID_CONTENT}\n${platform_compiler_detection}\n#endif")
   endif()
 
   set(${outvar} ${CMAKE_${lang}_COMPILER_ID_CONTENT} PARENT_SCOPE)

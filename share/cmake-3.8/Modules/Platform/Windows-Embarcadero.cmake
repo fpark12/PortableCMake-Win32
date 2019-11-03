@@ -76,8 +76,6 @@ macro(__embarcadero_language lang)
   set(CMAKE_SHARED_LIBRARY_${lang}_FLAGS "${_tD}") # ... while this is a space separated string.
   set(CMAKE_${lang}_USE_RESPONSE_FILE_FOR_INCLUDES 1)
 
-  set (CMAKE_${lang}_LINKER_WRAPPER_FLAG "-l")
-
   # compile a source file into an object file
   # place <DEFINES> outside the response file because Borland refuses
   # to parse quotes from the response file.
@@ -118,13 +116,6 @@ macro(__embarcadero_language lang)
   set(CMAKE_${lang}_CREATE_STATIC_LIBRARY
     "tlib ${CMAKE_START_TEMP_FILE}/p512 <LINK_FLAGS> /a <TARGET_QUOTED> <OBJECTS>${CMAKE_END_TEMP_FILE}"
     )
-
-  # Precompile Headers
-  if (EMBARCADERO)
-    set(CMAKE_PCH_EXTENSION .pch)
-    set(CMAKE_${lang}_COMPILE_OPTIONS_USE_PCH -Xclang -include-pch -Xclang <PCH_FILE>)
-    set(CMAKE_${lang}_COMPILE_OPTIONS_CREATE_PCH -Xclang -emit-pch -Xclang -include -Xclang <PCH_HEADER>)
-  endif()
 
   # Initial configuration flags.
   string(APPEND CMAKE_${lang}_FLAGS_INIT " ${_tM}")

@@ -1,34 +1,19 @@
 # Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
 # file Copyright.txt or https://cmake.org/licensing for details.
 
-#[=======================================================================[.rst:
-FindEXPAT
----------
-
-Find the native Expat headers and library.
-Expat is a stream-oriented XML parser library written in C.
-
-Imported Targets
-^^^^^^^^^^^^^^^^
-
-This module defines the following :prop_tgt:`IMPORTED` targets:
-
-``EXPAT::EXPAT``
-  The Expat ``expat`` library, if found.
-
-Result Variables
-^^^^^^^^^^^^^^^^
-
-This module will set the following variables in your project:
-
-``EXPAT_INCLUDE_DIRS``
-  where to find expat.h, etc.
-``EXPAT_LIBRARIES``
-  the libraries to link against to use Expat.
-``EXPAT_FOUND``
-  true if the Expat headers and libraries were found.
-
-#]=======================================================================]
+#.rst:
+# FindEXPAT
+# ---------
+#
+# Find expat
+#
+# Find the native EXPAT headers and libraries.
+#
+# ::
+#
+#   EXPAT_INCLUDE_DIRS - where to find expat.h, etc.
+#   EXPAT_LIBRARIES    - List of libraries when using expat.
+#   EXPAT_FOUND        - True if expat found.
 
 find_package(PkgConfig QUIET)
 
@@ -64,18 +49,10 @@ FIND_PACKAGE_HANDLE_STANDARD_ARGS(EXPAT
                                   REQUIRED_VARS EXPAT_LIBRARY EXPAT_INCLUDE_DIR
                                   VERSION_VAR EXPAT_VERSION_STRING)
 
-# Copy the results to the output variables and target.
+# Copy the results to the output variables.
 if(EXPAT_FOUND)
   set(EXPAT_LIBRARIES ${EXPAT_LIBRARY})
   set(EXPAT_INCLUDE_DIRS ${EXPAT_INCLUDE_DIR})
-
-  if(NOT TARGET EXPAT::EXPAT)
-    add_library(EXPAT::EXPAT UNKNOWN IMPORTED)
-    set_target_properties(EXPAT::EXPAT PROPERTIES
-      IMPORTED_LINK_INTERFACE_LANGUAGES "C"
-      IMPORTED_LOCATION "${EXPAT_LIBRARY}"
-      INTERFACE_INCLUDE_DIRECTORIES "${EXPAT_INCLUDE_DIRS}")
-  endif()
 endif()
 
 mark_as_advanced(EXPAT_INCLUDE_DIR EXPAT_LIBRARY)

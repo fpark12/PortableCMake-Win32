@@ -1,15 +1,41 @@
 #include <pthread.h>
+#include <stdio.h>
+#include <unistd.h>
 
-void* start_routine(void* args)
+void* runner(void*);
+
+int res = 0;
+#ifdef __CLASSIC_C__
+int main()
 {
-  return args;
+  int ac;
+  char* av[];
+#else
+int main(int ac, char* av[])
+{
+#endif
+  pthread_t tid[2];
+  pthread_create(&tid[0], 0, runner, (void*)1);
+  pthread_create(&tid[1], 0, runner, (void*)2);
+
+#if defined(__BEOS__) && !defined(__ZETA__) /* (no usleep on BeOS 5.) */
+  usleep(1); /* for strange behavior on single-processor sun */
+#endif
+
+  pthread_join(tid[0], 0);
+  pthread_join(tid[1], 0);
+  if (ac > 1000) {
+    return *av[0];
+  }
+  return res;
 }
 
-int main(void)
+void* runner(void* args)
 {
-  /* This is a compile and link test, no code to actually run things. */
-  pthread_t thread;
-  pthread_create(&thread, 0, start_routine, 0);
-  pthread_join(thread, 0);
+  int cc;
+  for (cc = 0; cc < 10; cc++) {
+    printf("%p CC: %d\n", args, cc);
+  }
+  res++;
   return 0;
 }

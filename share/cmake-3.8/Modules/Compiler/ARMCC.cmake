@@ -34,6 +34,4 @@ macro(__compiler_armcc lang)
   set(CMAKE_${lang}_CREATE_STATIC_LIBRARY  "<CMAKE_AR> --create -cr <TARGET> <LINK_FLAGS> <OBJECTS>")
 
   set(CMAKE_DEPFILE_FLAGS_${lang} "--depend=<DEPFILE> --depend_single_line --no_depend_system_headers")
-
-  set(CMAKE_${lang}_LINKER_WRAPPER_FLAG "-Xlinker" " ")
 endmacro()

@@ -39,4 +39,4 @@
 #  endif
 #endif
 @CUSTOM_CONTENT@
-#endif /* @INCLUDE_GUARD_NAME@ */
+#endif

@@ -63,16 +63,6 @@ is set for all the packages.
 
 The default value for this global property is ``OPTIONAL``.
 
-
-.. variable:: FeatureSummary_<TYPE>_DESCRIPTION
-
-The global property :variable:`FeatureSummary_<TYPE>_DESCRIPTION` can be defined
-for each type to replace the type name with the specified string whenever the
-package type is used in an output string.
-
-If not set, the string "``<TYPE>`` packages" is used.
-
-
 #]=======================================================================]
 
 get_property(_fsPkgTypeIsSet GLOBAL PROPERTY FeatureSummary_PKG_TYPES SET)
@@ -96,6 +86,8 @@ Functions
 ^^^^^^^^^
 
 #]=======================================================================]
+
+include(CMakeParseArguments)
 
 function(_FS_GET_FEATURE_SUMMARY _property _var _includeQuiet)
 
@@ -204,7 +196,7 @@ endfunction()
                      [VAR <variable_name>]
                      [INCLUDE_QUIET_PACKAGES]
                      [FATAL_ON_MISSING_REQUIRED_PACKAGES]
-                     [DESCRIPTION "<description>" | DEFAULT_DESCRIPTION]
+                     [DESCRIPTION "<description>"]
                      [QUIET_ON_EMPTY]
                      WHAT (ALL
                           | PACKAGES_FOUND | PACKAGES_NOT_FOUND
@@ -255,10 +247,7 @@ endfunction()
   information is "printed" into the specified variable.  If ``FILENAME`` is
   not used, the information is printed to the terminal.  Using the
   ``DESCRIPTION`` option a description or headline can be set which will be
-  printed above the actual content.  If only one type of
-  package was requested, no title is printed, unless it is explicitly set using
-  either ``DESCRIPTION`` to use a custom string, or ``DEFAULT_DESCRIPTION`` to
-  use a default title for the requested type.
+  printed above the actual content.
   If ``INCLUDE_QUIET_PACKAGES`` is given, packages which have been searched with
   ``find_package(... QUIET)`` will also be listed. By default they are skipped.
   If ``FATAL_ON_MISSING_REQUIRED_PACKAGES`` is given, CMake will abort if a
@@ -317,14 +306,8 @@ endfunction()
 
 function(FEATURE_SUMMARY)
 # CMAKE_PARSE_ARGUMENTS(<prefix> <options> <one_value_keywords> <multi_value_keywords> args...)
-  set(options APPEND
-              INCLUDE_QUIET_PACKAGES
-              FATAL_ON_MISSING_REQUIRED_PACKAGES
-              QUIET_ON_EMPTY
-              DEFAULT_DESCRIPTION)
-  set(oneValueArgs FILENAME
-                   VAR
-                   DESCRIPTION)
+  set(options APPEND INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES QUIET_ON_EMPTY)
+  set(oneValueArgs FILENAME VAR DESCRIPTION)
   set(multiValueArgs WHAT)
 
   CMAKE_PARSE_ARGUMENTS(_FS "${options}" "${oneValueArgs}" "${multiValueArgs}"  ${_FIRST_ARG} ${ARGN})
@@ -335,11 +318,6 @@ function(FEATURE_SUMMARY)
 
   if(NOT _FS_WHAT)
     message(FATAL_ERROR "The call to FEATURE_SUMMARY() doesn't set the required WHAT argument.")
-  endif()
-
-  if(_FS_DEFAULT_DESCRIPTION AND DEFINED _FS_DESCRIPTION)
-    message(WARNING "DEFAULT_DESCRIPTION option discarded since DESCRIPTION is set.")
-    set(_FS_DEFAULT_DESCRIPTION 0)
   endif()
 
   set(validWhatParts "ENABLED_FEATURES"
@@ -354,29 +332,11 @@ function(FEATURE_SUMMARY)
                                "${_fsPkgType}_PACKAGES_NOT_FOUND")
   endforeach()
 
-  set(title_ENABLED_FEATURES               "The following features have been enabled:")
-  set(title_DISABLED_FEATURES              "The following features have been disabled:")
-  set(title_PACKAGES_FOUND                 "The following packages have been found:")
-  set(title_PACKAGES_NOT_FOUND             "The following packages have not been found:")
-  foreach(_fsPkgType ${_fsPkgTypes})
-    set(_fsPkgTypeDescription "${_fsPkgType} packages")
-    get_property(_fsPkgTypeDescriptionIsSet GLOBAL PROPERTY FeatureSummary_${_fsPkgType}_DESCRIPTION SET)
-    if(_fsPkgTypeDescriptionIsSet)
-      get_property(_fsPkgTypeDescription GLOBAL PROPERTY FeatureSummary_${_fsPkgType}_DESCRIPTION )
-    endif()
-    set(title_${_fsPkgType}_PACKAGES_FOUND     "The following ${_fsPkgTypeDescription} have been found:")
-    set(title_${_fsPkgType}_PACKAGES_NOT_FOUND "The following ${_fsPkgTypeDescription} have not been found:")
-  endforeach()
-
   list(FIND validWhatParts "${_FS_WHAT}" indexInList)
   if(NOT "${indexInList}" STREQUAL "-1")
     _FS_GET_FEATURE_SUMMARY( ${_FS_WHAT} _featureSummary ${_FS_INCLUDE_QUIET_PACKAGES} )
     if(_featureSummary OR NOT _FS_QUIET_ON_EMPTY)
-      if(_FS_DEFAULT_DESCRIPTION)
-        set(_fullText "${title_${_FS_WHAT}}\n${_featureSummary}\n")
-      else()
-        set(_fullText "${_FS_DESCRIPTION}${_featureSummary}\n")
-      endif()
+      set(_fullText "${_FS_DESCRIPTION}${_featureSummary}\n")
     endif()
 
     if(_featureSummary)
@@ -414,6 +374,15 @@ function(FEATURE_SUMMARY)
         endif()
       endforeach()
     endif()
+
+    set(title_ENABLED_FEATURES               "The following features have been enabled:")
+    set(title_DISABLED_FEATURES              "The following features have been disabled:")
+    set(title_PACKAGES_FOUND                 "The following packages have been found:")
+    set(title_PACKAGES_NOT_FOUND             "The following packages have not been found:")
+    foreach(_fsPkgType ${_fsPkgTypes})
+      set(title_${_fsPkgType}_PACKAGES_FOUND     "The following ${_fsPkgType} packages have been found:")
+      set(title_${_fsPkgType}_PACKAGES_NOT_FOUND "The following ${_fsPkgType} packages have not been found:")
+    endforeach()
 
     set(_fullText "${_FS_DESCRIPTION}")
     foreach(part ${allWhatParts})
@@ -491,7 +460,7 @@ endfunction()
     by the project when available at buildtime, but it also work without.
     ``RECOMMENDED`` is similar to ``OPTIONAL``, i.e.  the project will build if
     the package is not present, but the functionality of the resulting
-    binaries will be severely limited.  If a ``REQUIRED`` package is not
+    binaries will be severly limited.  If a ``REQUIRED`` package is not
     available at buildtime, the project may not even build.  This can be
     combined with the ``FATAL_ON_MISSING_REQUIRED_PACKAGES`` argument for
     ``feature_summary()``.  Last, a ``RUNTIME`` package is a package which is

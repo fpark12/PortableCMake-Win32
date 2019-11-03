@@ -15,7 +15,7 @@ include(CMakeTestCompilerCommon)
 unset(CMAKE_CUDA_COMPILER_WORKS CACHE)
 
 # This file is used by EnableLanguage in cmGlobalGenerator to
-# determine that the selected cuda compiler can actually compile
+# determine that that selected cuda compiler can actually compile
 # and link the most basic of programs.   If not, a fatal error
 # is set and cmake stops processing commands and will not generate
 # any makefiles or projects.
@@ -42,10 +42,9 @@ if(NOT CMAKE_CUDA_COMPILER_WORKS)
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
     "Determining if the CUDA compiler works failed with "
     "the following output:\n${__CMAKE_CUDA_COMPILER_OUTPUT}\n\n")
-  string(REPLACE "\n" "\n  " _output "${__CMAKE_CUDA_COMPILER_OUTPUT}")
-  message(FATAL_ERROR "The CUDA compiler\n  \"${CMAKE_CUDA_COMPILER}\"\n"
+  message(FATAL_ERROR "The CUDA compiler \"${CMAKE_CUDA_COMPILER}\" "
     "is not able to compile a simple test program.\nIt fails "
-    "with the following output:\n  ${_output}\n\n"
+    "with the following output:\n ${__CMAKE_CUDA_COMPILER_OUTPUT}\n\n"
     "CMake will not be able to correctly generate this project.")
 else()
   if(CUDA_TEST_WAS_RUN)

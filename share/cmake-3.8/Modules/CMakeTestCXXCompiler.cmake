@@ -11,24 +11,17 @@ endif()
 
 include(CMakeTestCompilerCommon)
 
-# work around enforced code signing and / or missing exectuable target type
-set(__CMAKE_SAVED_TRY_COMPILE_TARGET_TYPE ${CMAKE_TRY_COMPILE_TARGET_TYPE})
-if(_CMAKE_FEATURE_DETECTION_TARGET_TYPE)
-  set(CMAKE_TRY_COMPILE_TARGET_TYPE ${_CMAKE_FEATURE_DETECTION_TARGET_TYPE})
-endif()
-
 # Remove any cached result from an older CMake version.
 # We now store this in CMakeCXXCompiler.cmake.
 unset(CMAKE_CXX_COMPILER_WORKS CACHE)
 
 # This file is used by EnableLanguage in cmGlobalGenerator to
-# determine that the selected C++ compiler can actually compile
+# determine that that selected C++ compiler can actually compile
 # and link the most basic of programs.   If not, a fatal error
 # is set and cmake stops processing commands and will not generate
 # any makefiles or projects.
 if(NOT CMAKE_CXX_COMPILER_WORKS)
   PrintTestCompilerStatus("CXX" "")
-  __TestCompiler_setTryCompileTargetType()
   file(WRITE ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/testCXXCompiler.cxx
     "#ifndef __cplusplus\n"
     "# error \"The CMAKE_CXX_COMPILER is set to a C compiler\"\n"
@@ -41,7 +34,6 @@ if(NOT CMAKE_CXX_COMPILER_WORKS)
   set(CMAKE_CXX_COMPILER_WORKS ${CMAKE_CXX_COMPILER_WORKS})
   unset(CMAKE_CXX_COMPILER_WORKS CACHE)
   set(CXX_TEST_WAS_RUN 1)
-  __TestCompiler_restoreTryCompileTargetType()
 endif()
 
 if(NOT CMAKE_CXX_COMPILER_WORKS)
@@ -49,10 +41,9 @@ if(NOT CMAKE_CXX_COMPILER_WORKS)
   file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
     "Determining if the CXX compiler works failed with "
     "the following output:\n${__CMAKE_CXX_COMPILER_OUTPUT}\n\n")
-  string(REPLACE "\n" "\n  " _output "${__CMAKE_CXX_COMPILER_OUTPUT}")
-  message(FATAL_ERROR "The C++ compiler\n  \"${CMAKE_CXX_COMPILER}\"\n"
+  message(FATAL_ERROR "The C++ compiler \"${CMAKE_CXX_COMPILER}\" "
     "is not able to compile a simple test program.\nIt fails "
-    "with the following output:\n  ${_output}\n\n"
+    "with the following output:\n ${__CMAKE_CXX_COMPILER_OUTPUT}\n\n"
     "CMake will not be able to correctly generate this project.")
 else()
   if(CXX_TEST_WAS_RUN)
@@ -85,6 +76,4 @@ else()
   endif()
 endif()
 
-set(CMAKE_TRY_COMPILE_TARGET_TYPE ${__CMAKE_SAVED_TRY_COMPILE_TARGET_TYPE})
-unset(__CMAKE_SAVED_TRY_COMPILE_TARGET_TYPE)
 unset(__CMAKE_CXX_COMPILER_OUTPUT)

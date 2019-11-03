@@ -1,8 +1,8 @@
 # Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
 # file Copyright.txt or https://cmake.org/licensing for details.
 
-if(NOT ${CMAKE_GENERATOR} MATCHES "Visual Studio ([^9]|[9][0-9])")
-  message(FATAL_ERROR
+if(NOT ${CMAKE_GENERATOR} MATCHES "Visual Studio ([^789]|[789][0-9])")
+   message(FATAL_ERROR
     "C# is currently only supported for Microsoft Visual Studio 2010 and later.")
 endif()
 
@@ -18,11 +18,12 @@ if(NOT CMAKE_CSharp_COMPILER_ID_RUN)
   set(CMAKE_CSharp_COMPILER_ID_RUN 1)
 
   # Try to identify the compiler.
+  set(CMAKE_CSharp_COMPILER_ID_STRINGS_PARAMETERS ENCODING UTF-16LE)
   set(CMAKE_CSharp_COMPILER_ID)
   include(${CMAKE_ROOT}/Modules/CMakeDetermineCompilerId.cmake)
   CMAKE_DETERMINE_COMPILER_ID(CSharp CSFLAGS CMakeCSharpCompilerId.cs)
 
-  execute_process(COMMAND "${CMAKE_CSharp_COMPILER}" "/help /preferreduilang:en-US" OUTPUT_VARIABLE output)
+  execute_process(COMMAND "${CMAKE_CSharp_COMPILER}" "/help" OUTPUT_VARIABLE output)
   string(REPLACE "\n" ";" output "${output}")
   foreach(line ${output})
     string(TOUPPER ${line} line)

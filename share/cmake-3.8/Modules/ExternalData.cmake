@@ -1111,7 +1111,7 @@ if("${ExternalData_ACTION}" STREQUAL "fetch")
       list(GET algo_list ${ii} algo)
       _ExternalData_download_object("${name}" "${hash}" "${algo}"
         obj succeeded algoErrorMsg)
-      string(APPEND errorMsg "\n${algoErrorMsg}")
+      set(errorMsg "${errorMsg}\n${algoErrorMsg}")
       if(succeeded)
         break()
       endif()
@@ -1133,7 +1133,7 @@ if("${ExternalData_ACTION}" STREQUAL "fetch")
 
   if(file_up_to_date)
     # Touch the file to convince the build system it is up to date.
-    file(TOUCH "${file}")
+    execute_process(COMMAND "${CMAKE_COMMAND}" -E touch "${file}")
   else()
     _ExternalData_link_or_copy("${obj}" "${file}")
   endif()

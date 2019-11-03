@@ -10,7 +10,7 @@ get_filename_component(CMAKE_BASE_NAME "${CMAKE_CSharp_COMPILER}" NAME_WE)
 
 set(CMAKE_BUILD_TYPE_INIT Debug)
 
-set(CMAKE_CSharp_FLAGS_INIT "/define:TRACE /langversion:3")
+set(CMAKE_CSharp_FLAGS_INIT "/define:TRACE /langversion:3 /nowin32manifest")
 set(CMAKE_CSharp_FLAGS_DEBUG_INIT "/debug:full /optimize- /warn:3 /errorreport:prompt /define:DEBUG")
 set(CMAKE_CSharp_FLAGS_RELEASE_INIT "/debug:none /optimize  /warn:1  /errorreport:queue")
 set(CMAKE_CSharp_FLAGS_RELWITHDEBINFO_INIT "/debug:full /optimize-")
@@ -43,9 +43,24 @@ endif()
 # on the initial values computed in the platform/*.cmake files
 # use _INIT variables so that this only happens the first time
 # and you can set these flags in the cmake cache
-set(CMAKE_CSharp_FLAGS_INIT "$ENV{CSFLAGS} ${CMAKE_CSharp_FLAGS_INIT}")
+set(CMAKE_CSharp_FLAGS_INIT "$ENV{CSharpFLAGS} ${CMAKE_CSharp_FLAGS_INIT}")
+# avoid just having a space as the initial value for the cache
+if(CMAKE_CSharp_FLAGS_INIT STREQUAL " ")
+  set(CMAKE_CSharp_FLAGS_INIT)
+endif()
+set (CMAKE_CSharp_FLAGS "${CMAKE_CSharp_FLAGS_INIT}" CACHE STRING
+     "Flags used by the C# compiler during all build types.")
 
-cmake_initialize_per_config_variable(CMAKE_CSharp_FLAGS "Flags used by the C# compiler")
+if(NOT CMAKE_NOT_USING_CONFIG_FLAGS)
+  set (CMAKE_CSharp_FLAGS_DEBUG "${CMAKE_CSharp_FLAGS_DEBUG_INIT}" CACHE STRING
+     "Flags used by the C# compiler during debug builds.")
+  set (CMAKE_CSharp_FLAGS_MINSIZEREL "${CMAKE_CSharp_FLAGS_MINSIZEREL_INIT}" CACHE STRING
+     "Flags used by the C# compiler during release builds for minimum size.")
+  set (CMAKE_CSharp_FLAGS_RELEASE "${CMAKE_CSharp_FLAGS_RELEASE_INIT}" CACHE STRING
+     "Flags used by the C# compiler during release builds.")
+  set (CMAKE_CSharp_FLAGS_RELWITHDEBINFO "${CMAKE_CSharp_FLAGS_RELWITHDEBINFO_INIT}" CACHE STRING
+     "Flags used by the C# compiler during release builds with debug info.")
+endif()
 
 if(CMAKE_CSharp_STANDARD_LIBRARIES_INIT)
   set(CMAKE_CSharp_STANDARD_LIBRARIES "${CMAKE_CSharp_STANDARD_LIBRARIES_INIT}"
@@ -53,15 +68,52 @@ if(CMAKE_CSharp_STANDARD_LIBRARIES_INIT)
   mark_as_advanced(CMAKE_CSharp_STANDARD_LIBRARIES)
 endif()
 
-# set missing flags (if they are not defined). This is needed in the
+# set missing flags (if they do not exist). This is needed in the
 # unlikely case that you have only C# and no C/C++ targets in your
 # project.
-cmake_initialize_per_config_variable(CMAKE_EXE_LINKER_FLAGS    "Flags used by the linker")
-cmake_initialize_per_config_variable(CMAKE_SHARED_LINKER_FLAGS "Flags used by the linker during the creation of shared libraries")
+if(NOT EXISTS CMAKE_SHARED_LINKER_FLAGS)
+    set(CMAKE_SHARED_LINKER_FLAGS "" CACHE STRING "" FORCE)
+endif()
+if(NOT EXISTS CMAKE_SHARED_LINKER_FLAGS_DEBUG)
+    set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "" CACHE STRING "" FORCE)
+endif()
+if(NOT EXISTS CMAKE_SHARED_LINKER_FLAGS_RELEASE)
+    set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "" CACHE STRING "" FORCE)
+endif()
+if(NOT EXISTS CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL)
+    set(CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL "" CACHE STRING "" FORCE)
+endif()
+if(NOT EXISTS CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO)
+    set(CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO "" CACHE STRING "" FORCE)
+endif()
+
+if(NOT EXISTS CMAKE_EXE_LINKER_FLAGS)
+    set(CMAKE_EXE_LINKER_FLAGS "" CACHE STRING "" FORCE)
+endif()
+if(NOT EXISTS CMAKE_EXE_LINKER_FLAGS_DEBUG)
+    set(CMAKE_EXE_LINKER_FLAGS_DEBUG "" CACHE STRING "" FORCE)
+endif()
+if(NOT EXISTS CMAKE_EXE_LINKER_FLAGS_RELEASE)
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "" CACHE STRING "" FORCE)
+endif()
+if(NOT EXISTS CMAKE_EXE_LINKER_FLAGS_MINSIZEREL)
+    set(CMAKE_EXE_LINKER_FLAGS_MINSIZEREL "" CACHE STRING "" FORCE)
+endif()
+if(NOT EXISTS CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO)
+    set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO "" CACHE STRING "" FORCE)
+endif()
 
 set(CMAKE_CSharp_CREATE_SHARED_LIBRARY "CSharp_NO_CREATE_SHARED_LIBRARY")
 set(CMAKE_CSharp_CREATE_SHARED_MODULE "CSharp_NO_CREATE_SHARED_MODULE")
 set(CMAKE_CSharp_LINK_EXECUTABLE "CSharp_NO_LINK_EXECUTABLE")
+
+mark_as_advanced(
+    CMAKE_CSharp_FLAGS
+    CMAKE_CSharp_FLAGS_RELEASE
+    CMAKE_CSharp_FLAGS_RELWITHDEBINFO
+    CMAKE_CSharp_FLAGS_MINSIZEREL
+    CMAKE_CSharp_FLAGS_DEBUG
+    )
 
 set(CMAKE_CSharp_USE_RESPONSE_FILE_FOR_OBJECTS 1)
 set(CMAKE_CSharp_INFORMATION_LOADED 1)
